@@ -1,23 +1,17 @@
-import os
-import pandas as pd
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from datetime import date, timedelta
-
-app = Flask(__name__)
-app.secret_key = 'gna_3anio_seguridad_profesional' # Clave para proteger sesiones
-
-# --- 1. CONEXIÓN ROBUSTA A POSTGRESQL ---
+# --- 1. CONEXIÓN ROBUSTA Y DINÁMICA A POSTGRESQL ---
 def obtener_conexion():
+    database_url = os.environ.get('DATABASE_URL')
     try:
-        return psycopg2.connect(
-            host="localhost",
-            database="SISTEMAGUARDIA1",
-            user="postgres",
-            password="CHOPA",
-            connect_timeout=5
-        )
+        if database_url:
+            return psycopg2.connect(database_url, sslmode='require')
+        else:
+            return psycopg2.connect(
+                host="localhost",
+                database="SISTEMAGUARDIA1",
+                user="postgres",
+                password="CHOPA",
+                connect_timeout=5
+            )
     except psycopg2.Error as e:
         print(f"ERROR DE CONEXIÓN: {e}")
         return None
