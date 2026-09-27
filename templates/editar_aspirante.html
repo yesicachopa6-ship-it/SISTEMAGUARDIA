@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Editar Aspirante - GNA</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+
+    <style>
+
+        body {
+
+            background: url('/static/fondo.png') no-repeat center center fixed;
+
+            background-size: cover;
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+        }
+
+        .card-militar {
+
+            background-color: rgba(255, 255, 255, 0.95);
+
+            border-top: 5px solid #2e4d23;
+
+            border-radius: 8px;
+
+        }
+
+        .header-gna {
+
+            background-color: #2e4d23;
+
+            color: white;
+
+            padding: 15px;
+
+            border-radius: 5px 5px 0 0;
+
+            display: flex;
+
+            align-items: center;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container mt-5">
+
+        <div class="row justify-content-center">
+
+            <div class="col-md-8 card-militar shadow-lg p-0">
+
+                <div class="header-gna">
+
+                    <img src="/static/logo_gna.png" alt="Logo GNA" style="height: 50px; margin-right: 15px;">
+
+                    <h2 class="mb-0">Actualización de Legajo y Situación</h2>
+
+                </div>
+
+               
+
+                <form action="{{ url_for('editar_aspirante', ce=asp.ce) }}" method="POST" class="p-4">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label fw-bold">Apellido y Nombre</label>
+
+                            <input type="text" name="apellido_nombre" class="form-control" value="{{ asp.apellido_nombre }}" required>
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label fw-bold">Grado</label>
+
+                            <input type="text" name="grado" class="form-control" value="{{ asp.grado }}">
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label fw-bold">Situación Institucional</label>
+
+                            <select name="situacion" class="form-select border-success">
+
+                                <option value="DISPONIBLE" {% if asp.situacion == 'DISPONIBLE' %}selected{% endif %}>DISPONIBLE</option>
+
+                                <option value="SSD" {% if asp.situacion == 'SSD' %}selected{% endif %}>SSD (Sin Servicio de Destino)</option>
+
+                                <option value="ART" {% if asp.situacion == 'ART' %}selected{% endif %}>ART</option>
+
+                                <option value="LAO" {% if asp.situacion == 'LAO' %}selected{% endif %}>LAO (Licencia)</option>
+
+                                <option value="AUTORIZADO" {% if asp.situacion == 'AUTORIZADO' %}selected{% endif %}>AUTORIZADO</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label fw-bold">Aula</label>
+
+                            <input type="text" name="aula" class="form-control" value="{{ asp.aula }}">
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="mt-4 text-end">
+
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancelar</a>
+
+                        <button type="submit" class="btn btn-success px-5">Guardar Cambios</button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

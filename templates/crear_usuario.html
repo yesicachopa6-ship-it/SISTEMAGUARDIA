@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GNA - Crear Usuario</title>
+    <style>
+        /* Estilo unificado basado en tu referencia visual */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            
+            /* Fondo con la imagen de la Escuela y capa oscura */
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                        url('/static/fondo_gna.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Ventana Blanca Central (Formato Mediano) */
+        .ventana-formulario {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px; /* Tamaño optimizado para formularios */
+            box-sizing: border-box;
+        }
+
+        /* Título con línea verde institucional */
+        h2 {
+            color: #1a3a5a;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-weight: bold;
+            border-bottom: 2px solid #2e4d23;
+            padding-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        /* Grupo de campos */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: #fafafa;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2e4d23;
+            background-color: #ffffff;
+        }
+
+        /* Botón Verde (Color GNA) */
+        .btn-crear {
+            width: 100%;
+            background-color: #2e4d23;
+            color: #ffffff;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+
+        .btn-crear:hover {
+            background-color: #1e3317;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Enlace para volver */
+        .btn-volver {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-volver:hover {
+            color: #000;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body><div class="ventana-formulario">
+    
+    <!-- BLOQUE DE MENSAJES FLASH (Corregido para evitar duplicados) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div id="flash-container">
+          {% for category, message in messages %}
+            <div class="alert-message" style="padding: 12px; margin-bottom: 10px; border-radius: 8px; text-align: center; font-weight: 500;
+                        background-color: {{ '#d4edda' if category == 'success' else '#f8d7da' }}; 
+                        color: {{ '#155724' if category == 'success' else '#721c24' }};
+                        border: 1px solid {{ '#c3e6cb' if category == 'success' else '#f5c6cb' }};">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <h2>Crear Nuevo Usuario</h2>
+
+    <form action="/crear_usuario" method="POST">
+    <!-- El "name" tiene que ser exactamente username -->
+    <input type="text" name="username" placeholder="Nombre de usuario" required>
+    
+    <!-- El "name" tiene que ser exactamente password -->
+    <input type="password" name="password" placeholder="Contraseña" required>
+    
+    <select name="rol">
+        <option value="operador">Operador</option>
+        <option value="admin">Administrador</option>
+        <option value="visualizador">Visualizador</option>
+    </select>
+    
+    <button type="submit">Crear Usuario</button>
+</form>
+
+    <a href="/" class="btn-volver">Cancelar y volver al inicio</a>
+</div>
+</body>
+</html>

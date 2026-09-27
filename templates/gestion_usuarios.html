@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Sistema Gendarmería</title>
+    <!-- Bootstrap para un diseño profesional -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar-custom { background-color: #2e4d23; } /* Verde Gendarmería */
+        .card-header { background-color: #2e4d23; color: white; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark navbar-custom mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+            <i class="fas fa-shield-alt"></i> Panel de Administración
+        </a>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- Alertas de Flash (Error de duplicados, éxito, etc.) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Usuarios Registrados</h5>
+            <!-- Botón que abre el Modal para crear usuario -->
+            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalCrear">
+                <i class="fas fa-user-plus"></i> Nuevo Usuario
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre de Usuario</th>
+                            <th>Rol</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in usuarios %}
+                        <tr>
+                            <!-- IMPORTANTE: Usamos .id, .username y .rol porque usamos RealDictCursor -->
+                            <td>{{ user.id }}</td>
+                            <td><strong>{{ user.username }}</strong></td>
+                            <td>
+                                <span class="badge {% if user.rol == 'admin' %}bg-danger{% else %}bg-primary{% endif %}">
+                                    {{ user.rol | upper }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <!-- Formulario para eliminar -->
+                                <form action="{{ url_for('eliminar_usuario', id=user.id) }}" method="POST" 
+                                      onsubmit="return confirm('¿Está seguro de eliminar al usuario {{ user.username }}?');" style="display:inline;">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No hay usuarios registrados en la base de datos.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PARA CREAR USUARIO -->
+<div class="modal fade" id="modalCrear" tabindex="-1" aria-labelledby="modalCrearLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('crear_usuario') }}" method="POST">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalCrearLabel">Registrar Nuevo Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de Usuario</label>
+                        <input type="text" name="username" class="form-control" placeholder="Ej: chopa" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rol del Usuario</label>
+                        <select name="rol" class="form-select">
+                            <option value="operador" selected>Operador</option>
+                            <option value="admin">Administrador</option>
+                            <option value="visualizador">Visualizador</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts de Bootstrap para que funcionen los Modales y Alertas -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Asentar Guardia - GNA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+    <style>
+        body {
+            background: url('/static/fondo.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card-militar {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-top: 5px solid #2e4d23;
+            border-radius: 8px;
+        }
+        .header-gna {
+            background-color: #2e4d23;
+            color: white;
+            padding: 15px;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            align-items: center;
+        }
+        .info-header {
+            background-color: #f8f9fa;
+            border-left: 4px solid #d4af37; /* Dorado institucional */
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .label-custom {
+            color: #2e4d23;
+            font-weight: bold;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-9 card-militar shadow-lg p-0">
+                
+                <!-- Cabecera Institucional -->
+                <div class="header-gna">
+                    <img src="/static/logo_gna.png" alt="Logo GNA" style="height: 50px; margin-right: 15px;">
+                    <h2 class="mb-0">Libro de Guardia - Registro de Servicio</h2>
+                </div>
+                
+                <form method="POST" class="p-4">
+                    
+                    <!-- DATOS DEL ASPIRANTE (Organizados y Visibles) -->
+                    <div class="info-header shadow-sm">
+                        <div class="row">
+                            <div class="col-md-4 mb-2">
+                                <span class="label-custom">Grado:</span><br>
+                                <span class="fw-bold text-dark">{{ asp.grado or 'ASP III AÑO' }}</span>
+                            </div>
+                            <div class="col-md-8 mb-2">
+                                <span class="label-custom">Apellido y Nombre:</span><br>
+                                <span class="fw-bold text-dark">{{ asp.apellido_nombre }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="label-custom">DNI:</span><br>
+                                <span class="text-muted">{{ asp.dni }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="label-custom">Código Estadístico:</span><br>
+                                <span class="text-muted">{{ asp.ce }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="label-custom">Aula:</span><br>
+                                <span class="text-muted">{{ asp.aula }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- DATOS DEL SERVICIO -->
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Fecha de Guardia</label>
+                            <input type="date" name="fecha_guardia" class="form-control border-success" required>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Carácter</label>
+                            <select name="tipo_guardia" class="form-select border-success">
+                                <option value="TITULAR">TITULAR</option>
+                                <option value="REEMPLAZANTE">REEMPLAZANTE</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Turno / Horario</label>
+                            <select name="turno" class="form-select border-success">
+                                <option value="DIURNA">DIURNA (07:00 a 19:00)</option>
+                                <option value="NOCTURNA">NOCTURNA (19:00 a 07:00)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">¿Cubrió el servicio efectivamente?</label>
+                            <select name="cubrio" class="form-select border-warning bg-light fw-bold text-success">
+                                <option value="SI">SÍ - Contabilizar Guardia</option>
+                                <option value="NO">NO - Solo Registro (No suma punto)</option>
+                            </select>
+                            <div class="form-text">Nota: Si es reemplazante y NO cubrió, seleccione "NO" para no alterar el contador.</div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Observaciones / Puesto de Facción</label>
+                            <textarea name="observaciones" class="form-control" rows="3" placeholder="Ej: Puesto 1 - Portón de acceso. Sin novedades."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Botonera -->
+                    <div class="mt-4 text-end border-top pt-3">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success px-5">
+                            <i class="fas fa-save"></i> Registrar en Libro
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

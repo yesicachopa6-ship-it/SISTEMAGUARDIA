@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cargar Aspirante</title>
+    <style>
+        body { 
+            background: url("{{ url_for('static', filename='fondo.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: sans-serif; 
+            background-color: #f4f4f4; 
+            padding: 20px; 
+        }
+        
+        .form-container { 
+            background: rgba(255, 255, 255, 0.94); /* Mantenemos tu transparencia prolija */
+            padding: 30px; /* Unificado para que respire parejo de todos los lados */
+            border-radius: 8px; 
+            max-width: 500px; 
+            margin: auto; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            border-top: 4px solid #2e4d23; /* Tu detalle verde arriba */
+        }
+
+        /* --- AQUÍ ESTÁ EL TRUCO DE ALINEACIÓN --- */
+        input, select, button { 
+            box-sizing: border-box; /* Fuerza a que todo se quede ADENTRO del cuadro */
+            width: 100%; 
+        }
+
+        input, select { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+        }
+
+        button { 
+            padding: 10px; 
+            background: #2e4d23; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            font-weight: bold;
+        }
+
+        .back-link { 
+            display: block; 
+            margin-top: 15px; 
+            text-align: center; 
+            color: #666; 
+            text-decoration: none; 
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Cargar Nuevo Aspirante</h2>
+        <form action="{{url_for('cargar_aspirante')}}" method="POST">
+            <label>CE:</label>
+            <input type="text" name="ce" required>
+            <label>DNI:</label>
+            <input type="text" name="dni" required>
+            <label>Apellido y Nombre:</label>
+            <input type="text" name="apellido_nombre" required>
+            <label>Aula:</label>
+            <input type="text" name="aula" required>
+            <label>Grado:</label>
+            <input type="text" name="grado" value="Aspirante de III Año">
+            <button type="submit">Guardar Aspirante</button>
+        </form>
+        <a href="/" class="back-link">Volver al Inicio</a>
+    </div>
+</body>
+</html>

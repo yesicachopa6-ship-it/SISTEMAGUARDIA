@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Servicio Cumplido - GNA</title>
+    
+    <!-- CSS Bootstrap 5 & Font Awesome 6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: url("{{ url_for('static', filename='fondo.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* TARJETA BLANCA SEMI-TRANSPARENTE CENTRADA */
+        .card-container {
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            width: 100%;
+            max-width: 950px;
+            backdrop-filter: blur(5px);
+        }
+
+        .title-header {
+            color: #1a1a1a;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .btn-verde-militar {
+            background-color: #2d4a27;
+            color: white;
+            font-weight: bold;
+            border: none;
+            transition: background 0.3s;
+        }
+
+        .btn-verde-militar:hover {
+            background-color: #1e331a;
+            color: white;
+        }
+
+        .btn-volver {
+            color: #4a5568;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .btn-volver:hover {
+            color: #183520;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card-container">
+        <!-- ENCABEZADO CON LOGO Y TÍTULO -->
+        <div class="d-flex align-items-center mb-4 pb-2 border-bottom">
+            <img src="{{ url_for('static', filename='logo_gna.png') }}" alt="Escudo GNA" class="me-3" style="max-height: 70px; width: auto;">
+            <div>
+                <h3 class="fw-bold text-dark m-0"><i class="fas fa-check-double me-2" style="color: #2d4a27;"></i>Confirmar Servicio Cumplido</h3>
+                <small class="text-muted fw-bold">Escuela de Suboficiales "Cabo Raúl Remberto Cuello"</small>
+            </div>
+        </div>
+        
+        <!-- ALERTAS FLASH -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
+                <i class="fas fa-info-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- BUSCADOR POR FECHA -->
+        <form method="GET" action="{{ url_for('confirmar_servicio') }}" class="row g-3 align-items-center mb-4">
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-secondary style="font-size: 13px;">FECHA A EVALUAR:</label>
+                <input type="date" name="fecha" class="form-control" value="{{ fecha_busqueda }}" required>
+            </div>
+            <div class="col-md-4 align-self-end">
+                <button type="submit" class="btn btn-primary w-100 fw-bold" style="background-color: #163e23;">
+                    <i class="fas fa-search me-2"></i>Buscar Servicios
+                </button>
+            </div>
+        </form>
+
+        <!-- FORMULARIO DE CONFIRMACIÓN -->
+        <form action="{{ url_for('procesar_confirmacion_guardia') }}" method="POST">
+            <input type="hidden" name="fecha_busqueda" value="{{ fecha_busqueda }}">
+
+            <!-- TABLA DE RESULTADOS -->
+            <div class="table-responsive mb-4" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-hover align-middle bg-white rounded">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40px; text-align: center;">
+                                <input type="checkbox" id="selectAll" onclick="toggleSeleccion(this)" style="cursor: pointer; transform: scale(1.1);">
+                            </th>
+                            <th>C.E.</th>
+                            <th>Grado</th>
+                            <th>Apellido y Nombre</th>
+                            <th>Aula</th>
+                            <th>Servicio</th>
+                            <th>Turno</th>
+                            <th class="text-center">Guardias</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if servicios %}
+                            {% for s in servicios %}
+                            <tr>
+                                <td style="text-align: center;">
+                                    <input type="checkbox" name="ces_confirmados" value="{{ s['ce'] }}" class="chk-aspirante" style="cursor: pointer;">
+                                </td>
+                                <td class="fw-bold" style="color: #1a365d;">{{ s['ce'] }}</td>
+                                <td>{{ s['grado'] }}</td>
+                                <td class="fw-bold">{{ s['apellido_nombre'] }}</td>
+                                <td>{{ s['aula'] }}</td>
+                                <td><span class="badge bg-secondary">{{ s['tipo_guardia'] }}</span></td>
+                                <td>{{ s['turno'] }}</td>
+                                <td class="text-center fw-bold">{{ s['total_guardias'] if s['total_guardias'] is not none else 0 }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    No hay servicios registrados para la fecha {{ fecha_busqueda }}.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- BOTÓN PRINCIPAL DE GUARDADO CUMPLIDO -->
+            {% if servicios %}
+            <button type="submit" class="btn btn-verde-militar w-100 py-2 fs-6 shadow-sm mb-2" onclick="return confirm('¿Confirma que el personal seleccionado cumplió efectivamente con el servicio?')">
+                Confirmar Guardia Cumplida (+1)
+            </button>
+            {% endif %}
+
+            <!-- BOTÓN VOLVER AL INICIO -->
+            <div class="text-center">
+                <a href="{{ url_for('index') }}" class="btn-volver">
+                    Volver al Inicio
+                </a>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- JS Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function toggleSeleccion(source) {
+        checkboxes = document.getElementsByClassName('chk-aspirante');
+        for(var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+    </script>
+</body>
+</html>

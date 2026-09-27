@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificar Guardia - GNA</title>
+    
+    <!-- CSS Bootstrap 5 & Font Awesome 6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: url("{{ url_for('static', filename='fondo.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* ESTILOS EXACTOS DE LA TABLA DEL INICIO */
+        .tabla-inicio {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .tabla-inicio th {
+            background-color: #2b2b2b !important;
+            color: #ffffff !important;
+            text-transform: uppercase;
+            font-weight: 700;
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid #3a3a3a;
+            letter-spacing: 0.5px;
+        }
+
+        .tabla-inicio td {
+            padding: 8px;
+            border: 1px solid #d3d3d3;
+            vertical-align: middle;
+        }
+
+        .tabla-inicio tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .tabla-inicio tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* COLORES Y BADGES DE SITUACIÓN */
+        .badge-situacion {
+            display: block;
+            width: 100%;
+            padding: 6px 0;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+
+        .sit-art { background-color: #c0392b; }
+        .sit-autorizado { background-color: #8e44ad; }
+        .sit-de-servicio { background-color: #6c757d; }
+        .sit-disponible { background-color: #27ae60; }
+        .sit-ssd { background-color: #d35400; }
+        .sit-lao { background-color: #2980b9; }
+
+        .btn-verde-militar {
+            background-color: #2d4a27;
+            color: white;
+            font-weight: bold;
+            border: none;
+        }
+
+        .btn-verde-militar:hover {
+            background-color: #1e331a;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card-container">
+
+    <!-- ENCABEZADO CON LOGO Y TÍTULO -->
+    <div class="d-flex align-items-center mb-4 pb-2 border-bottom">
+        <img src="{{ url_for('static', filename='logo_gna.png') }}" alt="Escudo GNA" class="me-3" style="max-height: 70px; width: auto;">
+        <div>
+            <h3 class="fw-bold text-dark m-0"><i class="fas fa-calendar-alt me-2" style="color: #2d4a27;"></i>Planificar Servicio Entrante</h3>
+            <small class="text-muted fw-bold">Escuela de Suboficiales "Cabo Raúl Remberto Cuello"</small>
+        </div>
+    </div> 
+
+    <!-- ALERTAS FLASH -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+            <i class="fas fa-info-circle me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- FORMULARIO DE PLANIFICACIÓN -->
+    <form action="{{ url_for('guardar_planificacion_guardia') }}" method="POST">
+        
+        <!-- PARÁMETROS GENERALES DEL SERVICIO -->
+        <div class="row g-3 mb-4 p-3 bg-light rounded border">
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-secondary style="font-size: 12px;">FECHA:</label>
+                <input type="date" name="fecha_guardia" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-secondary" style="font-size: 12px;">TIPO DE SERVICIO:</label>
+                <select name="tipo_guardia" class="form-select" required>
+                    <option value="" disabled selected>-- Seleccione Tipo --</option>
+                    <option value="TITULAR">TITULAR</option>
+                    <option value="REEMPLAZANTE">REEMPLAZANTE</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-secondary style="font-size: 12px;">TURNO:</label>
+                <select name="turno" class="form-select" required>
+                    <option value="07:00 a 19:00">DIURNA 07:00 a 19:00 Hs</option>
+                    <option value="19:00 a 07:00">NOCTURNA19:00 a 07:00 Hs</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- TABLA CON FORMATO IDÉNTICO AL INICIO -->
+        <div class="p-2 mb-0 fw-bold text-white d-flex justify-content-between align-items-center" style="background-color: #2d4a27; border-radius: 4px 4px 0 0; font-size: 13px;">
+            <span><i class="fas fa-check-square me-2"></i>MARQUE LOS CASILLEROS DEL PERSONAL ASIGNADO</span>
+        </div>
+
+        <div class="table-responsive mb-4" style="max-height: 450px; overflow-y: auto;">
+            <table class="tabla-inicio">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">
+                            <input type="checkbox" id="selectAll" onclick="toggleSeleccion(this)" style="transform: scale(1.1); cursor: pointer;">
+                        </th>
+                        <th>GRADO</th>
+                        <th>APELLIDO Y NOMBRE</th>
+                        <th>CE</th>
+                        <th>DNI</th>
+                        <th>AULA</th>
+                        <th>SITUACIÓN</th>
+                        <th>TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in aspirantes %}
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" name="ces_seleccionados" value="{{ a['ce'] }}" class="chk-aspirante" style="transform: scale(1.1); cursor: pointer;">
+                        </td>
+                        <td class="text-center">{{ a['grado'] }}</td>
+                        <td class="fw-bold" style="color: #000;">{{ a['apellido_nombre'] }}</td>
+                        <td class="text-center">{{ a['ce'] }}</td>
+                        <td class="text-center">{{ a['dni'] }}</td>
+                        <td class="text-center">{{ a['aula'] }}</td>
+                        <td class="p-0">
+                            {% set sit = a['situacion'] | upper | trim %}
+                            {% if sit == 'ART' %}
+                                <span class="badge-situacion sit-art">ART</span>
+                            {% elif sit == 'AUTORIZADO' or sit == 'AUTORIZADOS' %}
+                                <span class="badge-situacion sit-autorizado">AUTORIZADO</span>
+                            {% elif sit == 'DE SERVICIO' %}
+                                <span class="badge-situacion sit-de-servicio">DE SERVICIO</span>
+                            {% elif sit == 'DISPONIBLE' or sit == 'DISPONIBLES' %}
+                                <span class="badge-situacion sit-disponible">DISPONIBLE</span>
+                            {% elif sit == 'SSD' %}
+                                <span class="badge-situacion sit-ssd">SSD</span>
+                            {% elif sit == 'LAO' %}
+                                <span class="badge-situacion sit-lao">LAO</span>
+                            {% else %}
+                                <span class="badge-situacion sit-de-servicio">{{ sit }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center fw-bold fs-6">{{ a['total_guardias'] if a['total_guardias'] is not none else 0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- BOTONES DE ACCIÓN -->
+        <button type="submit" class="btn btn-verde-militar w-100 py-2 fs-6 shadow-sm mb-2">
+            Guardar y Confimar Servicio
+        </button>
+
+        <div class="text-center">
+            <a href="{{ url_for('index') }}" class="text-decoration-none fw-bold text-secondary" style="font-size: 14px;">
+                Volver al Inicio
+            </a>
+        </div>
+
+    </form>
+</div>
+
+<!-- JavaScript Bootstrap y Checkbox All -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function toggleSeleccion(source) {
+    checkboxes = document.getElementsByClassName('chk-aspirante');
+    for(var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = source.checked;
+    }
+}
+</script>
+</body>
+</html>

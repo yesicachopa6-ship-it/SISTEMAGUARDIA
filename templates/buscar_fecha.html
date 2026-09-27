@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Servicios - Detalle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url("{{ url_for('static', filename='fondo.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.94);
+            padding: 0; /* ¡IMPORTANTE!: Cambiamos a 0 para que la cabecera verde pegue bien a los bordes arriba y a los costados */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            width: 95%;
+            max-width: 1100px; 
+            text-align: left; /* Cambiamos a LEFT para que las etiquetas (Apellido, DNI) se alineen prolijas sobre sus cajas */
+            overflow: hidden;
+        }
+
+        .logo {
+            width: 140px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            background-color: #234423; /* Verde heráldico militar oscuro */
+            color: #d4af37; /* Dorado institucional */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            padding: 20px 35px; /* Le damos el aire adentro de la barra */
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .search-box {
+            background: rgba(0, 0, 0, 0.03); /* Un gris ultra claro sutil */
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            border: 1px solid #d4af37; /* Cambiado a borde dorado fino */
+        }
+
+        .btn-search {
+            background: #234423; /* Cambiado a Verde GNA oscuro */
+            color: #d4af37;      /* Letras en dorado */
+            border: 1px solid #d4af37;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .btn-search:hover {
+            background: #d4af37; /* Invierte colores al pasar el mouse */
+            color: #234423;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #234423; /* Cabecera de tabla en Verde GNA */
+            color: #d4af37;      /* Texto de cabecera en Dorado */
+            padding: 12px 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        tr:hover { 
+            background: rgba(212, 175, 55, 0.08); /* Sutil destello dorado al pasar el mouse */
+        }
+
+        /* Estilo para los estados */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: #234423; /* Texto del botón volver en verde militar */
+            font-weight: bold; 
+            transition: color 0.3s;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="{{ url_for('static', filename='logo_gna.png') }}" alt="Logo" class="logo">
+    
+    <br>
+    <h2>Planilla de Servicios Realizados</h2>
+
+    <form action="/buscar_por_fecha" method="POST" class="search-box">
+        <label style="color: #d4af37; font-weight: bold; margin-right: 10px;">FECHA:</label>
+        <input type="date" name="fecha" required value="{{ fecha_buscada }}" style="padding: 8px; border-radius: 5px; border: 1px solid #d4af37; background: rgba(0,0,0,0.5); color: white;">
+        <button type="submit" class="btn-search btn-militar-primary">VER REGISTROS</button>
+    </form>
+
+    {% if resultados %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Grado</th>
+                    <th>Apellido y Nombre</th>
+                    <th>Aula</th>
+                    <th>Titular</th>
+                    <th>Rempl. (Cubrió)</th>
+                    <th>Rempl. (No Cubrió)</th>
+                    <th>Turno / Obs.</th> </tr>
+            </thead>
+            <tbody>
+                {% for r in resultados %}
+                <tr>
+                    <td>Asp. 3er Año</td> 
+                    
+                    <td style="text-align: left; padding-left: 10px;">{{ r.apellido_nombre }}</td>
+                    <td>{{ r.aula }}</td>
+                    
+                    <td>
+                        {% if r.tipo_guardia.upper() == 'TITULAR' %} X {% endif %}
+                    </td>
+                    
+                    <td>
+                        {% if r.tipo_guardia.upper() == 'REEMPLAZANTE' and r.cubrio.upper() == 'SI' %} X {% endif %}
+                    </td>
+                    
+                    <td>
+                        {% if r.tipo_guardia.upper() == 'REEMPLAZANTE' and r.cubrio.upper() == 'NO' %} X {% endif %}
+                    </td>
+
+                    <td>
+                        <small>{{ r.turno }} {% if r.observaciones %}({{ r.observaciones }}){% endif %}</small>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #ffc107; font-style: italic; padding: 15px;">
+                        No se registraron servicios de guardia para la fecha consultada.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif fecha_buscada %}
+        <p style="color: #64748b;">No hay datos para la fecha seleccionada.</p>
+    {% endif %}
+
+    <br>
+    <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Volver al Panel de Control</a>
+</div>
+
+</body>
+</html>

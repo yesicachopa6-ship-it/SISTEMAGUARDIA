@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GNA - Registro del Personal</title>
+    <!-- Font Awesome para los iconos del menú -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --verde-gna: #2e4d23;
+            --azul-oscuro: #1a2a3a;
+            --gris-fondo: #f4f7f6;
+            --rojo-alerta: #c0392b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: var(--gris-fondo);
+        }
+
+        /* --- MENÚ LATERAL (SIDEBAR) --- */
+        .sidebar {
+            width: 250px;
+            background-color: var(--azul-oscuro);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            font-size: 1.2rem;
+            padding: 20px 0;
+            border-bottom: 1px solid #34495e;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .sidebar a {
+            padding: 15px 25px;
+            text-decoration: none;
+            color: #ecf0f1;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #2c3e50;
+            padding-left: 35px;
+        }
+
+        .sidebar i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 20px;
+        }
+
+        /* Encabezado con Logos */
+        .header-institucional {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-institucional h1 {
+            font-size: 1.8rem;
+            color: #333;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        .logo-img {
+            height: 70px;
+            width: auto;
+        }
+
+        /* Título de la Planilla */
+        .titulo-registro {
+            text-align: center;
+            color: #444;
+            margin: 20px 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MENÚ LATERAL -->
+    <div class="sidebar">
+        <h2>MENU</h2>
+        <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Inicio</a>
+        <a href="{{ url_for('cargar_aspirante') }}"><i class="fas fa-user-plus"></i> Cargar Aspirante</a>
+        <a href="{{ url_for('buscar_por_fecha') }}"><i class="fas fa-search"></i> Buscar por Fecha</a>
+        <a href="{{ url_for('buscar_aspirante') }}"><i class="fas fa-search"></i> Buscar Aspirante</a>
+        <a href="{{ url_for('planificar_guardia') }}"><i class="fas fa-calendar-alt"></i> Planificar Servicio Entrante</a>
+        <a href="{{ url_for('confirmar_servicio') }}"><i class="fas fa-check-circle"></i> Confirmar Servicio Cumplido</a>
+
+        {% if session.get('rol') == 'admin' %}
+            <a href="{{ url_for('gestion_usuarios') }}"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a>
+        {% endif %}
+        
+        <div style="margin-top: auto;">
+            <a href="{{ url_for('logout') }}" style="background-color: #c0392b;">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+    <!-- CUERPO DE LA PÁGINA -->
+    <div class="main-content main-content-oscuro">
+
+        <div class="header-institucional">
+            <!-- Asegúrate de tener estas imágenes en tu carpeta /static/ -->
+            <img src="{{ url_for('static', filename='logo_gna.png') }}" class="logo-img" alt="Logo GNA">
+            <h1>GENDARMERIA NACIONAL</h1>
+            <img src="{{ url_for('static', filename='logo_gna.png') }}" class="logo-img" alt="Logo Institución">
+        </div>
+
+        <div class="titulo-registro">REGISTRO DEL PERSONAL</div>
+        <!-- --- 2. BARRA DE ESTADÍSTICAS (Botones que Filtran) --- -->
+            <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                
+                <a href="{{ url_for('index', situacion='DISPONIBLES') }}" style="flex: 1; padding: 15px; border-radius: 8px; background-color: #2e4d23; color: white; font-weight: bold; text-decoration: none; text-align: center; cursor: pointer;">
+                    DISPONIBLES: {{ conteo['DISPONIBLES'] }}
+                </a>
+
+                <a href="{{ url_for('index', situacion='SSD') }}" style="flex: 1; padding: 15px; border-radius: 8px; background-color: #f39c12; color: white; font-weight: bold; text-decoration: none; text-align: center; cursor: pointer;">
+                    SSD: {{ conteo['SSD'] }}
+                </a>
+
+                <a href="{{ url_for('index', situacion='ART') }}" style="flex: 1; padding: 15px; border-radius: 8px; background-color: #c0392b; color: white; font-weight: bold; text-decoration: none; text-align: center; cursor: pointer;">
+                    ART: {{ conteo['ART'] }}
+                </a>
+
+                <a href="{{ url_for('index', situacion='LAO') }}" style="flex: 1; padding: 15px; border-radius: 8px; background-color: #2980b9; color: white; font-weight: bold; text-decoration: none; text-align: center; cursor: pointer;">
+                    LAO: {{ conteo['LAO'] }}
+                </a>
+
+                <a href="{{ url_for('index', situacion='AUTORIZADOS') }}" style="flex: 1; padding: 15px; border-radius: 8px; background-color: #8e44ad; color: white; font-weight: bold; text-decoration: none; text-align: center; cursor: pointer;">
+                    AUTORIZADOS: {{ conteo['AUTORIZADOS'] }}
+                </a>
+
+                <!-- Sugerencia: Botón para volver a ver a todos -->
+                <a href="{{ url_for('index', situacion='TOTAL') }}" style="flex: 1; padding: 15px; border-radius: 8px; background-color: #2c3e50; color: white; font-weight: bold; text-decoration: none; text-align: center; cursor: pointer;">
+                    TOTAL: {{ conteo['TOTAL'] }}
+                </a>
+            </div>
+        <!-- --- 3. TABLA DE ASPIRANTES --- -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <style>
+                /* Estructura general de la tabla */
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border: 1px solid #333; }
+                th { background-color: #333; color: white; padding: 12px; border: 1px solid #444; text-transform: uppercase; font-size: 11px; }
+                td { padding: 8px; border: 1px solid #ccc; text-align: center; font-size: 13px; font-weight: 500; }
+
+                /* Colores que pintan TODA la fila según la situación */
+                .fila-disponible { background-color: #d4edda !important; color: #155724; } /* Verde */
+                .fila-ssd { background-color: #fff3cd !important; color: #856404; }        /* Amarillo/Naranja */
+                .fila-art { background-color: #f8d7da !important; color: #721c24; }        /* Rojo */
+                .fila-lao { background-color: #d1ecf1 !important; color: #0c5460; }        /* Azul */
+                .fila-autorizado { background-color: #e2e3e5 !important; color: #383d41; } /* Gris/Púrpura */
+
+                /* Botonera superior */
+                .contenedor-conteo { display: flex; gap: 10px; margin-bottom: 20px; }
+                .box-conteo { flex: 1; padding: 10px; color: white; border-radius: 5px; text-align: center; font-weight: bold; font-size: 12px; }
+            </style>
+<table class="table table-hover shadow-sm" style="width: 100%; border-collapse: collapse; background-color: white;">
+    <thead style="background-color: #2e4d23; color: white;">
+        <tr style="text-align: center;">
+            <th style="padding: 12px;">Grado</th>
+            <th style="padding: 12px; text-align: left;">Apellido y Nombre</th>
+            <th style="padding: 12px;">CE</th>
+            <th style="padding: 12px;">DNI</th>
+            <th style="padding: 12px;">Aula</th>
+            <th style="padding: 12px;">Situación</th>
+            <th style="padding: 12px;">Total</th> <!-- Nueva columna de contador -->
+            <th style="padding: 12px;">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asp in aspirantes %}
+        <tr style="border-bottom: 1px solid #ddd; text-align: center; vertical-align: middle;
+            {% if asp.situacion == 'DISPONIBLE' %} background-color: rgba(46, 77, 35, 0.05); 
+            {% elif asp.situacion == 'SSD' %} background-color: rgba(243, 156, 18, 0.1); 
+            {% elif asp.situacion == 'ART' %} background-color: rgba(192, 57, 43, 0.1); 
+            {% elif asp.situacion == 'LAO' %} background-color: rgba(41, 128, 185, 0.1); 
+            {% elif asp.situacion == 'AUTORIZADO' %} background-color: rgba(142, 68, 173, 0.1); 
+            {% endif %}">
+            
+            <td style="padding: 10px;">{{ asp.grado }}</td>
+            <td style="text-align: left; padding-left: 15px; font-weight: bold;">{{ asp.apellido_nombre }}</td>
+            <td>{{ asp.ce }}</td>
+            <td>{{ asp.dni }}</td>
+            <td>{{ asp.aula }}</td>
+            
+            <!-- Celda de Situación con Estilo Dinámico -->
+            <td style="font-weight: bold; color: white; width: 120px; background-color: 
+                {% if asp.situacion == 'DISPONIBLE' %} #2e4d23
+                {% elif asp.situacion == 'SSD' %} #f39c12
+                {% elif asp.situacion == 'ART' %} #c0392b
+                {% elif asp.situacion == 'LAO' %} #2980b9
+                {% elif asp.situacion == 'AUTORIZADO' %} #8e44ad
+                {% else %} #6c757d {% endif %};">
+                {{ asp.situacion }}
+            </td>
+
+            <!-- Columna Total (Contador de Guardias) -->
+            <td style="font-weight: bold; font-size: 1.1em; color: #040404;">
+                {{ asp.total_guardias }}
+            </td>
+
+            <!-- Bloque de Acciones -->
+            <td style="white-space: nowrap; text-align: center; vertical-align: middle; padding: 6px !important;">
+                <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+                    
+                    <!-- Ícono Servicio (Verde Oscuro Institucional) -->
+                    <a href="{{ url_for('registrar_servicio', ce=asp['ce']) }}" 
+                    title="Registrar Servicio"
+                    style="text-decoration: none !important; display: inline-block !important;"
+                    >
+                        <i class="fas fa-shield-alt" 
+                        style="
+                            font-size: 15px !important; 
+                            color: #0a4bfedb !important; 
+                            transition: transform 0.2s, color 0.2s !important;
+                        "
+                        onmouseover="this.style.transform='scale(1.25)'; this.style.color='#143016';"
+                        onmouseout="this.style.transform='scale(1)'; this.style.color='#1e4620';"
+                        ></i>
+                    </a>
+                    <!-- 1. VER RESULTADO DEL REGISTRO / HISTORIAL DIRECTO -->
+                   <!-- Ícono Ver Resultado de Registro Directo -->
+                    <!-- Ícono Ver Historial / Registro Directo -->
+                    <a href="{{ url_for('buscar_aspirante', q=asp['dni']) }}" 
+                    title="Ver Historial / Registro de este Aspirante"
+                    style="text-decoration: none !important; display: inline-block !important;"
+                    >
+                        <i class="fas fa-file-invoice" 
+                        style="
+                            font-size: 15px !important; 
+                            color: #1a365d !important; 
+                            transition: transform 0.2s, color 0.2s !important;
+                        "
+                        onmouseover="this.style.transform='scale(1.25)'; this.style.color='#0f2341';"
+                        onmouseout="this.style.transform='scale(1)'; this.style.color='#1a365d';"
+                        ></i>
+                    </a>
+                    <!-- Ícono Editar (Naranja/Bronce Oscuro) -->
+                    <a href="{{ url_for('editar_aspirante', ce=asp['ce']) }}" 
+                    title="Editar Aspirante"
+                    style="text-decoration: none !important; display: inline-block !important;"
+                    >
+                        <i class="fas fa-pen" 
+                        style="
+                            font-size: 14px !important; 
+                            color: #c76a00 !important; 
+                            transition: transform 0.2s, color 0.2s !important;
+                        "
+                        onmouseover="this.style.transform='scale(1.25)'; this.style.color='#965000';"
+                        onmouseout="this.style.transform='scale(1)'; this.style.color='#c76a00';"
+                        ></i>
+                    </a>
+
+                    <!-- Ícono Eliminar (Rojo Carmesí Oscuro) -->
+                    <form action="{{ url_for('eliminar_aspirante', ce=asp['ce']) }}" 
+                        method="POST" 
+                        style="display: inline !important; margin: 0 !important; padding: 0 !important;"
+                        onclick="return confirm('¿Confirma la eliminación definitiva del aspirante?')">
+                        
+                        <button type="submit" 
+                                title="Eliminar Aspirante" 
+                                style="
+                                    background: none !important;
+                                    border: none !important;
+                                    padding: 0 !important;
+                                    margin: 0 !important;
+                                    cursor: pointer !important;
+                                    outline: none !important;
+                                "
+                        >
+                            <i class="fas fa-trash-alt" 
+                            style="
+                                font-size: 14px !important; 
+                                color: #902027 !important; 
+                                transition: transform 0.2s, color 0.2s !important;
+                            "
+                            onmouseover="this.style.transform='scale(1.25)'; this.style.color='#63151a';"
+                            onmouseout="this.style.transform='scale(1)'; this.style.color='#902027';"
+                            ></i>
+                        </button>
+                    </form>
+                    
+                </div>
+            </td>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- --- 4. PIE DE TABLA: GESTIÓN DE EXCEL --- -->
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                
+                <!-- Sección Importar -->
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <form action="{{ url_for('importar_excel') }}" method="POST" enctype="multipart/form-data" style="display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight:  bold; color: #555;">Importar Planilla (Excel):</label>
+                        <input type="file" name="file" accept=".xlsx, .xls" style="font-size: 0.9rem;">
+                        <button type="submit" style="background-color: var(--verde-gna); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                            <i class="fas fa-file-upload"></i> Subir
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Sección Eliminar (Solo para Administradores) -->
+                {% if session['rol'] == 'admin' %}
+                <div>
+                    <form action="{{ url_for('eliminar_excel') }}" method="POST" onsubmit="return confirm('¿ESTÁ SEGURO? Esta acción borrará a TODOS los aspirantes de la base de datos.')">
+                        <button type="submit" style="background-color: var(--rojo-alerta); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                            <i class="fas fa-trash-alt"></i> Eliminar Excel
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Mensajes Flash (Alertas del sistema) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div style="margin-top: 20px; padding: 15px; border-radius: 5px; 
+                  {% if category == 'success' %} background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
+                  {% elif category == 'danger' %} background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+                  {% else %} background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; {% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+    </div> <!-- Cierre de main-content -->
+
+    <script>
+        // Script opcional para que el mensaje flash desaparezca solo
+        setTimeout(function() {
+            let alerts = document.querySelectorAll('[style*="margin-top: 20px"]');
+            alerts.forEach(el => el.style.display = 'none');
+        }, 5000);
+    </script>
+</body>
+</html>

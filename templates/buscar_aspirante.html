@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Aspirante - GNA</title>
+    
+    <!-- CSS Bootstrap 5 & Font Awesome 6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: url("{{ url_for('static', filename='fondo.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .tabla-inicio {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .tabla-inicio th {
+            background-color: #2b2b2b !important;
+            color: #ffffff !important;
+            text-transform: uppercase;
+            font-weight: 700;
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid #3a3a3a;
+            letter-spacing: 0.5px;
+        }
+
+        .tabla-inicio td {
+            padding: 8px;
+            border: 1px solid #d3d3d3;
+            vertical-align: middle;
+        }
+
+        .tabla-inicio tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .tabla-inicio tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .badge-situacion {
+            display: block;
+            width: 100%;
+            padding: 6px 0;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+
+        .sit-art { background-color: #c0392b; }
+        .sit-autorizado { background-color: #8e44ad; }
+        .sit-de-servicio { background-color: #6c757d; }
+        .sit-disponible { background-color: #27ae60; }
+        .sit-ssd { background-color: #d35400; }
+        .sit-lao { background-color: #2980b9; }
+
+        .btn-verde-militar {
+            background-color: #2d4a27;
+            color: white;
+            font-weight: bold;
+            border: none;
+        }
+
+        .btn-verde-militar:hover {
+            background-color: #1e331a;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card-container">
+
+    <!-- ENCABEZADO CON LOGO -->
+    <div class="d-flex align-items-center mb-4 pb-2 border-bottom">
+        <img src="{{ url_for('static', filename='logo_gna.png') }}" alt="Escudo GNA" class="me-3" style="max-height: 70px; width: auto;">
+        <div>
+            <h3 class="fw-bold text-dark m-0"><i class="fas fa-search me-2" style="color: #2d4a27;"></i>Buscar Aspirante</h3>
+            <small class="text-muted fw-bold">Escuela de Suboficiales "Cabo Raúl Remberto Cuello"</small>
+        </div>
+    </div>
+
+    <!-- ALERTAS FLASH -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+            <i class="fas fa-info-circle me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- FORMULARIO DE BÚSQUEDA -->
+    <form method="GET" action="{{ url_for('buscar_aspirante') }}" class="row g-3 mb-4 p-3 bg-light rounded border align-items-end">
+        <div class="col-md-9">
+            <label class="form-label fw-bold text-secondary" style="font-size: 12px;">CRITERIO DE BÚSQUEDA (CE, DNI O APELLIDO):</label>
+            <input type="text" name="q" class="form-control" placeholder="Ingrese CE, DNI o Apellido del aspirante..." value="{{ busqueda if busqueda else '' }}" required>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-verde-militar w-100 py-2">
+                <i class="fas fa-search me-1"></i> Buscar
+            </button>
+        </div>
+    </form>
+
+    <!-- ENCABEZADO DE TABLA -->
+    <div class="p-2 mb-0 fw-bold text-white d-flex justify-content-between align-items-center" style="background-color: #2d4a27; border-radius: 4px 4px 0 0; font-size: 13px;">
+        <span><i class="fas fa-list me-2"></i>RESULTADOS DE LA BÚSQUEDA DE PERSONAL</span>
+        <small style="opacity: 0.8;">Información detallada e historial de servicios</small>
+    </div>
+
+    <!-- TABLA DE RESULTADOS -->
+    <div class="table-responsive mb-4" style="max-height: 450px; overflow-y: auto;">
+        <table class="tabla-inicio">
+            <thead>
+                <tr>
+                    <th>GRADO</th>
+                    <th>APELLIDO Y NOMBRE</th>
+                    <th>CE</th>
+                    <th>DNI</th>
+                    <th>AULA</th>
+                    <th>SITUACIÓN</th>
+                    <th>TOTAL GUARDIAS</th>
+                    <th style="width: 140px;">ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if aspirantes %}
+                    {% for a in aspirantes %}
+                    <tr>
+                        <td class="text-center">{{ a['grado'] }}</td>
+                        <td class="fw-bold" style="color: #000;">{{ a['apellido_nombre'] }}</td>
+                        <td class="text-center">{{ a['ce'] }}</td>
+                        <td class="text-center">{{ a['dni'] }}</td>
+                        <td class="text-center">{{ a['aula'] }}</td>
+                        <td class="p-0">
+                            {% set sit = a['situacion'] | upper | trim %}
+                            {% if sit == 'ART' %}
+                                <span class="badge-situacion sit-art">ART</span>
+                            {% elif sit == 'AUTORIZADO' or sit == 'AUTORIZADOS' %}
+                                <span class="badge-situacion sit-autorizado">AUTORIZADO</span>
+                            {% elif sit == 'DE SERVICIO' %}
+                                <span class="badge-situacion sit-de-servicio">DE SERVICIO</span>
+                            {% elif sit == 'DISPONIBLE' or sit == 'DISPONIBLES' %}
+                                <span class="badge-situacion sit-disponible">DISPONIBLE</span>
+                            {% elif sit == 'SSD' %}
+                                <span class="badge-situacion sit-ssd">SSD</span>
+                            {% elif sit == 'LAO' %}
+                                <span class="badge-situacion sit-lao">LAO</span>
+                            {% else %}
+                                <span class="badge-situacion sit-de-servicio">{{ sit }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center fw-bold fs-6">{{ a['total_guardias'] if a['total_guardias'] is not none else 0 }}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-dark fw-bold me-1" type="button" data-bs-toggle="collapse" data-bs-target="#historial-{{ loop.index }}" aria-expanded="false">
+                                <i class="fas fa-history"></i> Historial
+                            </button>
+                        </td>
+                    </tr>
+                    
+                    <!-- DESPLEGABLE CON HISTORIAL Y COLUMNA ELIMINAR -->
+                    <tr>
+                        <td colspan="8" class="p-0 border-0">
+                            <div class="collapse p-3 bg-white border-bottom" id="historial-{{ loop.index }}">
+                                <h6 class="fw-bold text-secondary mb-2" style="font-size: 13px;">
+                                    <i class="fas fa-calendar-check me-1"></i> Historial de Servicios de {{ a['apellido_nombre'] }}
+                                </h6>
+                                {% if a['historial'] %}
+                                    <table class="table table-sm table-bordered align-middle mb-0" style="font-size: 12px;">
+                                        <thead class="table-secondary">
+                                            <tr>
+                                                <th class="text-center">FECHA</th>
+                                                <th>TIPO DE GUARDIA</th>
+                                                <th class="text-center">TURNO</th>
+                                                <th class="text-center">CUBRIÓ</th>
+                                                <th>OBSERVACIONES</th>
+                                                <th class="text-center" style="width: 60px;">ACCIÓN</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for h in a['historial'] %}
+                                            <tr>
+                                                <td class="text-center fw-bold">{{ h['fecha'] }}</td>
+                                                <td>{{ h['tipo'] }}</td>
+                                                <td class="text-center">{{ h['turno'] }}</td>
+                                                <td class="text-center">
+                                                    {% if h['cubrio'] == 'SI' or h['cubrio'] == True %}
+                                                        <span class="badge bg-success">SI</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">NO</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ h['obs'] }}</td>
+                                                <td class="text-center">
+                                                    <!-- BOTÓN ELIMINAR (X ROJA) -->
+                                                    <form action="{{ url_for('eliminar_servicio', ce=a['ce']) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de que desea eliminar este registro de servicio?');">
+                                                        <input type="hidden" name="fecha_guardia" value="{{ h['fecha_sql'] }}">
+                                                        <input type="hidden" name="turno" value="{{ h['turno'] }}">
+                                                        <input type="hidden" name="cubrio" value="{{ h['cubrio'] }}">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Eliminar servicio">
+                                                            <i class="fas fa-times fw-bold"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <p class="text-muted small m-0">No se encontraron registros de guardias para este aspirante.</p>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            {% if busqueda %}
+                                No se encontraron registros que coincidan con "{{ busqueda }}".
+                            {% else %}
+                                Ingrese un criterio en el buscador superior para ver los resultados.
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- BOTÓN VOLVER -->
+    <div class="text-center">
+        <a href="{{ url_for('index') }}" class="text-decoration-none fw-bold text-secondary" style="font-size: 14px;">
+            Volver al Inicio
+        </a>
+    </div>
+
+</div>
+
+<!-- JavaScript Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
