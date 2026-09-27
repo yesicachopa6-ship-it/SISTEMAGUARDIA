@@ -1,4 +1,16 @@
 # --- 1. CONEXIÓN ROBUSTA Y DINÁMICA A POSTGRESQL ---
+import os
+import pandas as pd
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from datetime import date, timedelta
+
+# --- CREACIÓN DE LA APLICACIÓN FLASK ---
+app = Flask(__name__)
+app.secret_key = 'gna_3anio_seguridad_profesional'
+
+# --- CONEXIÓN A POSTGRESQL (SUPABASE / LOCAL) ---
 def obtener_conexion():
     database_url = os.environ.get('DATABASE_URL')
     try:
@@ -15,7 +27,6 @@ def obtener_conexion():
     except psycopg2.Error as e:
         print(f"ERROR DE CONEXIÓN: {e}")
         return None
-
 # --- 2. VERIFICACIÓN DE SESIÓN (SEGURIDAD) ---
 @app.before_request
 def verificar_sesion():
